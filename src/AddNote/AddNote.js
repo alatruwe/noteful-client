@@ -10,6 +10,7 @@ export default class AddNote extends Component {
     this.state = {
       name: "",
       content: "",
+      folder: "...",
       touched: false,
     };
   }
@@ -46,6 +47,19 @@ export default class AddNote extends Component {
     }
   }
 
+  // folder validation
+  updateFolder(folder) {
+    console.log(folder);
+    this.setState({ folder: folder, touched: true });
+  }
+
+  validateFolder() {
+    const folder = this.state.folder;
+    if (folder === "...") {
+      return "Please select a folder";
+    }
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
     const newNote = {
@@ -78,6 +92,7 @@ export default class AddNote extends Component {
     const { folders = [] } = this.context;
     const nameError = this.validateNoteName();
     const contentError = this.validateNoteContent();
+    const folderError = this.validateFolder();
     return (
       <section className="AddNote">
         <h2>Create a note</h2>
@@ -101,7 +116,10 @@ export default class AddNote extends Component {
             />
             {this.state.touched && <ValidationError message={contentError} />}
           </div>
-          <div className="field">
+          <div
+            className="field"
+            onChange={(e) => this.updateFolder(e.target.value)}
+          >
             <label htmlFor="note-folder-select">Folder</label>
             <select id="note-folder-select" name="note-folder-id">
               <option value={null}>...</option>
@@ -111,11 +129,16 @@ export default class AddNote extends Component {
                 </option>
               ))}
             </select>
+            {this.state.touched && <ValidationError message={folderError} />}
           </div>
           <div className="buttons">
             <button
               type="submit"
-              disabled={this.validateNoteName() || this.validateNoteContent()}
+              disabled={
+                this.validateNoteName() ||
+                this.validateNoteContent() ||
+                this.validateFolder()
+              }
             >
               Add note
             </button>
