@@ -2,15 +2,50 @@ import React, { Component } from "react";
 import NotefulForm from "../NotefulForm/NotefulForm";
 import ApiContext from "../ApiContext";
 import config from "../config";
+import ValidationError from "../ValidationError/ValidationError.js";
 import "./AddNote.css";
 
 export default class AddNote extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "",
+      content: "",
+      touched: false,
+    };
+  }
   static defaultProps = {
     history: {
       push: () => {},
     },
+    name: "",
+    content: "",
   };
   static contextType = ApiContext;
+
+  // form name validation
+  updateNoteName(name) {
+    this.setState({ name: name, touched: true });
+  }
+
+  validateNoteName() {
+    const name = this.state.name;
+    if (name.length === 0) {
+      return "Please enter a name";
+    }
+  }
+
+  // form content validation
+  updateNoteContent(content) {
+    this.setState({ content: content, touched: true });
+  }
+
+  validateNoteContent() {
+    const content = this.state.content;
+    if (content.length === 0) {
+      return "The note can't be empty";
+    }
+  }
 
   handleSubmit = (e) => {
     e.preventDefault();
@@ -42,17 +77,30 @@ export default class AddNote extends Component {
 
   render() {
     const { folders = [] } = this.context;
+    const nameError = this.validateNoteName();
+    const contentError = this.validateNoteContent();
     return (
       <section className="AddNote">
         <h2>Create a note</h2>
-        <NotefulForm onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit}>
           <div className="field">
             <label htmlFor="note-name-input">Name</label>
-            <input type="text" id="note-name-input" name="note-name" />
+            <input
+              type="text"
+              id="note-name-input"
+              name="note-name"
+              onChange={(e) => this.updateNoteName(e.target.value)}
+            />
+            {this.state.touched && <ValidationError message={nameError} />}
           </div>
           <div className="field">
             <label htmlFor="note-content-input">Content</label>
-            <textarea id="note-content-input" name="note-content" />
+            <textarea
+              id="note-content-input"
+              name="note-content"
+              onChange={(e) => this.updateNoteContent(e.target.value)}
+            />
+            {this.state.touched && <ValidationError message={contentError} />}
           </div>
           <div className="field">
             <label htmlFor="note-folder-select">Folder</label>
@@ -66,9 +114,11 @@ export default class AddNote extends Component {
             </select>
           </div>
           <div className="buttons">
-            <button type="submit">Add note</button>
+            <button type="submit" disabled={this.validateNoteName()}>
+              Add note
+            </button>
           </div>
-        </NotefulForm>
+        </form>
       </section>
     );
   }
